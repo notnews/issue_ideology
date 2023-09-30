@@ -1,0 +1,276 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[titletoc,title]{appendix}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\definecolor{dark-red}{rgb}{0.75,0.10,0.10} 
+\usepackage[margin=1in]{geometry}
+\usepackage[linkcolor=dark-red,
+colorlinks=true,
+urlcolor=blue,
+pdfstartview={XYZ null null 1.00},
+pdfpagemode=UseNone,
+citecolor={dark-red},
+pdftitle={Agenda Bias}]{hyperref}
+
+\usepackage[resetlabels,labeled]{multibib}
+\newcites{SI}{SI References}
+\usepackage{natbib}
+
+\usepackage{float}
+
+\usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+\geometry{letterpaper}               % This is 8.5x11 paper. Options are a4paper or a5paper or other... 
+\usepackage{graphicx}                % Handles inclusion of major graphics formats and allows use of 
+\usepackage{amsfonts,amssymb,amsbsy}
+\usepackage{amsxtra}
+\usepackage{verbatim}
+\setcitestyle{round,semicolon,aysep={},yysep={;}}
+\usepackage{setspace}		     % Permits line spacing control. Options are \doublespacing, \onehalfspace
+\usepackage{sectsty}		     % Permits control of section header styles
+\usepackage{lscape}
+\usepackage{fancyhdr}		     % Permits header customization. See header section below.
+\usepackage{url}                     % Correctly formats URLs with the \url{} tag
+\usepackage{fullpage}		%1-inch margins
+\usepackage{multirow}
+\usepackage{rotating}
+\setlength{\parindent}{3em}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage[T1]{fontenc}
+\usepackage{bm}
+\usepackage{libertine}
+
+\usepackage{chngcntr}
+
+%This section double-spaces & makes footnotes the same size as normal text.
+\usepackage{footmisc}
+\setlength{\footnotesep}{\baselineskip}
+\makeatother
+\renewcommand{\footnotelayout}{\normalsize \doublespacing}
+
+
+% Caption
+\usepackage[hang, font=small,skip=0pt, labelfont={bf}]{caption}
+%\captionsetup[subtable]{font=small,skip=0pt}
+\usepackage{subcaption}
+
+% tt font issues
+% \renewcommand*{\ttdefault}{qcr}
+\renewcommand{\ttdefault}{pcr}
+
+\setcounter{page}{0}
+
+\usepackage{lscape}
+\renewcommand{\textfraction}{0}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\floatpagefraction}{0.40}
+\setcounter{totalnumber}{5}
+\makeatletter
+\providecommand\phantomcaption{\caption@refstepcounter\@captype}
+\makeatother
+
+\title{Measuring Agendas, and Positions on Agendas}
+
+\author{Gaurav Sood\thanks{Gaurav can be reached at \href{mailto:gsood07@gmail.com}{\footnotesize{\texttt{gsood07@gmail.com}}}} \and Andy Guess\thanks{Andy can be reached at \href{mailto:guess@nyu.edu}{\texttt{guess@nyu.edu}}}\vspace{.5cm}}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{center}
+\vspace{.5cm}\textbf{NB:} Preliminary draft. Please do not cite without permission.\vspace{1.5cm}
+\end{center}
+\begin{comment}
+	
+setwd(paste0(basedir, "issue_ideology/ms/"))
+tools::texi2dvi("issue_ideology.tex", pdf=TRUE,clean=TRUE)
+setwd(basedir)
+
+\end{comment}
+
+\begin{abstract}
+\noindent Variation in agendas and positions on agendas are independently important. The former explains the kinds of issues people think are important, and the latter potentially explains people's positions on the issues. In this paper, we estimate variation on both these dimensions. To do this, we first estimate a supervised topic model using the bill labels from the Policy Agendas Project. Then within each of the topics, we estimate a model of slant using congressional speech as training data. Using this method, we scale 255 news programs across 50 television channels using original, and closed captions transcripts from these shows. We find large systematic variation in broad agendas of news media, and positions on those agendas.  
+\end{abstract}
+
+\textbf{Keywords}: Media bias, ideology, supervised topic models, agenda bias
+
+\clearpage
+\doublespace
+Media are our `window to the world.' What the media cover, and how they cover it, affects what we know about the world \citep{jerit2006citizens}, influences which issues we think are important \citep{mccombs1972agenda, behr1985, iyengar1993news}, and shapes how we think about those issues \citep[for e.g.][]{iyengar1990framing, iyengar1996framing}. For instance, exogenous shocks to the amount of news coverage of disasters affect how much money is donated to disaster victims \citep{eisensee2007news}. By the same token, who people think is responsible for crime depends on whether the media frames the issue episodically or thematically \citep{iyengar1989citizens}. Suffice to say that both, what issues are covered in the news, and how they are covered matters.
+
+Recent changes in news media---transition from mass media to new media---and the public, notably greater partisan animus \citep{iyengar2012affect}, have raised worries about a particular kind of media bias---partisan bias. In the past decade, numerous studies have estimated partisan bias in the media using two broad strategies. Some scholars have estimated ideology of the media as a function of shared phrases used by the media and the members of congress, using extant measures of politicians' ideology to impute scores for the media \citep[see, for e.g.,][]{groseclose2005, gentzkow2010}. Other set of scholars have exploited differences in audiences of various media outlets, using a structural model of consumption behavior to identify ideological location of news sources \citep[see, for e.g.,][]{barbera2014follow, gentzkow2011}. 
+
+Both these ways of estimating partisan bias, however, potentially conflate at least two distinct pathologies --- what the media covers (the agenda) and how it covers it. In this paper, we attempt to pry apart these two important kinds of variation. We do so by first estimating a supervised topic model using a corpora of labeled Congressional Bills from the Policy Agendas Project \citep{baumgartner2003policy}. We then use the model to predict the topics covered in various news outlets. We find significant variation across media outlets but also significant correlation in topical coverage across time---news media cover the same issue at about the same time. We then predict the Congressional speech corpora to estimate the partisan slant of each topic. Building on work by \citet{puglisi2011being} and \citet{larcinese2011partisan}, we use this information to create a measure of partisan slant based on agendas of media outlets. And then as a last step, we partition our congressional speech corpora into topical domains and estimate slant within each domain. We then use this to estimate variation in how the same topic is covered across outlets.  
+
+\section*{Why Distinguish Between Agendas and Positions on Agendas?}
+
+Consider a news organization that covers illegal immigration extensively. Without knowing anything more about the news organization, one would be hard pressed to say whether the news organization is for or against greater expenditure on border security. The news outlet could be Univision or the Fox News Channel or anything in between. For there is no necessary correlation between prioritizing an issue and position on the issue.  Media organizations on all sides of the issue can think that an issue is important, and spend a great deal of time covering it. 
+
+Not only is the distinction between agendas and positions on agendas conceptually important, it is also important for understanding the consequences of exposure to media. For, exposure to an agenda may simply cause people to think a particular issue is important, and not affect their position on the issue. For instance, local media's coverage of crime may make both Republicans and Democrats more concerned about crime, but may not change the viewers' opinions about how to solve crime. In fact, the long-held commonly expressed worry about media's power has to do with how exposure to media informs how important people think an issue is, not media's ability to influence people's positions on the issues. In Cohen's oft-quoted words, ``the press may not be successful much of the time in telling people what to think, but it is stunningly successful in telling its readers what to think about'' \citep{cohen1963press}.
+
+Affecting the importance of an issue can have important downstream consequences. In particular, agenda biases can affect partisan preferences. This is so because people believe that different parties are better at dealing with different issues---that the parties `own' certain issues \citep{petrocik1996issue}. For instance, people think that the Democratic Party is more competent at managing problems related to welfare, health care, and labor, while the Republicans are perceived as more competent on defense \citep{petrocik1996issue, goggin2015}. And `priming' issues owned by a particular party can advantage that party \citep{petrocik1996issue, petrocik2003issue}. \citet{puglisi2011being, larcinese2011partisan} build on that insight to describe variation in agenda of New York Times, and on economic issues by various newspapers, respectively. 
+
+Lastly, for very plausible reasons, agenda biases can have a larger influence people's preferences than exposure to explicit positions. The reasoning is straightforward--- it is easy for people to discern the ideology based on explicit positions, and discount information that is uncongenial to them. However, it is likely that people are less aware of biases in agendas and their power to shape opinions. Selecting what information to reveal can thus produce bias even with rational agents \citep[for relevant formal theoretic accounts, see][]{anderson2012media, bernhardt2008political}.
+
+Besides the potential effects of agenda biases on preferences on public preferences, agenda biases likely also affect policy making. \citet{egan2013partisan}, for instance, postulates that agendas of parties not just reflect stereotypes about competence that the parties can exploit, but also parties' legislative priorities. By focusing on a particular issue, a groundswell for dealing with that particular issue may be created. In all, distinguishing between agendas and positions on agendas may lead to a better understanding of effects of media.
+
+Aside from reasons to do with better understanding effects of media by coding `treatment' appropriately, differentiating between agenda and positions on the agenda may also be useful for creating better models of the economics of the media industry. A long literature in political science suggests that for a variety of reasons, some people are more interested in some issues than others \citep{iyengar2008selective, krosnick1990government, krosnick1995public}. For instance, partly perhaps due to self-interest, older people are more interested (and informed) about issues to do with Medicare, and younger people are more informed about issues to do with student-lending and health insurance for the young. Interest in an issue can outstrip interest in listening to a particular position on the issue \citep{iyengar2008selective}. To pursue the example of Medicare further, Americans over the age of 65 may be interested in all information to do with Medicare, not just, say the position of the Republican party. All in all, there exist a variety of important reasons to distinguish between agendas and positions on the agendas.
+
+\section*{Expectations About (Co)-Variation in Agendas and Positions on Agendas}
+
+There are competing conjectures about whether or not we should see much variation in agendas of news outlets. At one end, there are good reasons to think that the agendas of media are highly constrained by real world events and politicians' agendas. At the other end, there are reasons to think that the media have ample opportunity to be entrepreneurial about the agendas, and have ample incentives to take advantage of those opportunities. We investigate either end of the pool sequentially, fleshing out the logic and other relevant hypothesis that stem from these postulates. 
+
+If we assume that the media organizations (actors, outlets) do not act as independent political players trying to influence the politics of the country, the account of media's agenda degenerates to following what the people want. This in turn may in turn may mean covering appropriate real world events, and following the congressional agenda. The congressional agenda in turn is influenced by the majority party \citep{gailmard2007negative}. 
+
+The real world events may, however, dictate both the congress' and the media's agenda. In fact, one possibility is simply that the news media (and to some extent Congress) go from covering one `salient' real world event to another \citep[]{boydstun2013making, birkland1998focusing}. (What we mean by salient is theoretically debatable but appears to be widely agreed upon within the polity --- mass murders in the U.S. for instance are nearly universally acknowledged as newsworthy these days.) For instance, when the mass murders happen in South Carolina.\footnote{See \href{https://en.wikipedia.org/wiki/Charleston_church_shooting}{https://en.wikipedia.org/wiki/Charleston\_church\_shooting}.}, the media focus on that event. And then some time later, another thing happens, and the news media changes its focus to that event. 
+
+The prediction from such kinds of models is that the media's agendas ought to be broadly similar. And that over-time correlation in agendas ought to be high. This also means that any ideological bias ought to come from how the events are covered. For instance, while covering the shooting, Fox News may emphasize that had the pastor been armed, the tragedy could have been averted. On the other hand, MSNBC may emphasize the racial angle of the shooting. Or the Fox News may cover the racialization of the shooting by MSNBC. Or the MSNBC may decry the lack of discussion of race in shooting on conservative channels. The point is that the difference is less to do with what is covered and more to do with how it is covered. 
+
+But between these events, there are also fallow periods and other news programming that is less focused on current events. In those fallow periods, and on news programs less focused on covering current events, there is an opportunity for pursuing independent agendas. And we conjecture that the news outlets take this opportunity to cover issues that are important to them for one reason or another. For instance, some may pursue an issue because it is personally important to people in the editorial board. Or because the news media outlet is interested in building a groundswell of support for an issue it thinks can help their preferred party. Or for some other reason entirely. 
+
+In all, there exist good reasons to think both of the points are true---that media's agendas are largely constrained but do allow some opportunity for entrepreneurship. We empirically assess the extent to which the expectations hold. But before we do so, we describe the data, the measures, and our analytical strategy.
+
+\section*{Data and Measures}
+
+Our first goal is to estimate the political agenda of the news media. In particular, we want to classify the topical content of transcripts of television news shows, and articles from variety of online news outlets. To do so, we start by training a supervised topic model based on bill labels produced by the Policy Agendas Project (PAP) \citep{baumgartner2003policy}. To accomplish this, we download the entire corpora of nearly 27,000 congressional bills and PAP's labels and other miscellanea for these bills. PAP labels congressional bills as belonging to one of 20 major issue areas, ranging from Macroeconomics to Immigration to Environment to Defense. Each of these major issue areas are further sub-divided into sub-topics. (See ~\ref{si2} for all the subtopic labels per topic.) For instance, Macroeconomics is further subdivided into Inflation, Prices, and Interest Rates, Unemployment Rate, National Budget and Debt, etc. These sub-topics are informative, especially with regards to partisanship---for instance, Republicans are liable to speak more about budget deficits than Democrats, even though they may be no less interested in talking about Macroeconomics more generally --- but to get a better sense of coverage of broad agendas, we start by estimating a model of how major topic areas relate to the text of the bills. The coherence of the topics in PAP labels is not particularly high. For instance, the topic `Law, Crime, and Family Issues' spans from organized crime to child support.  So, we also learn a model of 90 selected (with enough support) minor topic labels.
+
+To estimate the model of how topic areas relate to text, we start with the standard text preprocessing stems of lemmatizing, removing `stop words', and punctuation, losing all words less than 2 characters long, and converting all the words to lower case. We further assume a 1-, 2- Markov model of language, storing just frequency of bigrams and trigrams and removing order information. Since we plan to use the data to predict ideology of the news data, we take an additional step of removing bi- and tri-grams that either don't exist in our news database or occur than 20,000 times. (See \citet{gentzkow2010} and \citet{MartinYurukoglu2014}, among others who have used similar assumptions in modeling similar text.) Next, we split the data into a test-set (20\%) and a training-set (80\%). On the training set, we use Support Vector Machine (SVM) classifier \citep{guyon2002gene} to model the relationship between classes and phrases. 
+\begin{align*} 
+& \left\lVert w \right\rVert^2 + C\sum_{i=1}^{m} \xi_i\\
+& \text{   subject to: } y_i(w \cdot x_i + b) \ge 1 - \xi_i, \xi_i \ge 0
+\end{align*}
+
+The out of sample accuracy for the model is approximately 80\%. Figure ~\ref{major_conf} plots the out-of-sample confusion matrix of actual and predicted labels when we predict major topics, and figure ~\ref{minor_conf} the boxplot of accuracy scores for minor topics. \ref{si_top20} shows the top 20 predictors of each of the topics.  
+
+\begin{figure}[H]
+\centering
+\caption{Out of Sample Confusion Matrix for Major Topics}\label{major_conf}
+\includegraphics[width=.75\textwidth]{../figs/conf_matrix_topic.pdf}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\caption{Distribution of Out of Sample Accuracy for Minor Topics}\label{minor_conf}
+\includegraphics[width=.75\textwidth]{../figs/conf_matrix_topic_all.pdf}
+\end{figure}
+
+To estimate the relationship between parties and emphasis on different topical areas, we use three training sets---congressional speech corpora for the 111th and the 112th congress, party manifestos of the two major parties over the past 20 years, and the 100 recent most Facebook wall posts of members of congress (as of October 2015).\footnote{We downloaded the congressional speech data using a \href{https://github.com/soodoku/speech-learn/blob/master/scripts/capitol_speech.py}{python module} that interfaces with the CapitolWords API by the Sunlight Foundation. We accessed manifesto data via the manifestos project \citep{manifesto2015}. For the Facebook data, we relied on R package, \href{https://github.com/pablobarbera/Rfacebook}{RFacebook}, an R Client for the Facebook API.} We preprocessed the data as before. Next, using the model we estimate above, we predict all the congressional corpora. We next calculate the extent to which an average Republican talks more about a topic than an average Democrat by predicting the topics of all the speech and the Facebook wall posts corpora. We synthesize the information as the extent to which Republicans speak about it more often than Democrats. Everything is rescaled from -1 to 1 where -1 is where Republicans speak about it all the time, and Democrats never, 0 reflecting a case where Democrats and Republicans speak about it equally and 1 where only Democrats speak on a topic.
+
+Lastly, we predict news data. Our textual news data originates from several sources. And importantly, it focuses on television news, still a major source of political information for most Americans \citep{chaffee1996americans}.\footnote{For more recent data, see \href{http://www.americanpressinstitute.org/publications/reports/survey-research/how-americans-get-news/}{How Americans Get Their News}, a 2014 report by the American Press Institute, and results of the \href{http://www.gallup.com/poll/163412/americans-main-source-news.aspx}{2013 Gallup Survey}.} We acquired broadcast transcripts from Fox News, CNNfn (CNN's now-defunct financial news network), CNN International, and MSNBC from NewsBank, a provider of full-text archives from a range of news sources, from 2000 to 2012. We supplemented this data with text transcripts from the Internet Archive (2009-2012) and the University of California, Los Angeles Closed Caption archive (LACC, 2006--2012) covering shows from CNBC, CNN, Current TV, Fox News, and MSNBC. In total we have data on more than 50 television channels, and 255 shows, e.g. NBC Nightly News, O'Reilly Factor, Countdown, CBS Evening News etc. Finally, we were able to download the text of stories posted to \href{CNN.com}{http://cnn.com} (2000--2014) and \href{MSNBC.com}{http://msnbc.com} (2010--2014) websites. We subset the data to shows with at least 100 transcripts each. And again we preprocess the text data --- stemming, removing stop-words and punctuation etc. as before. The table in the Appendix (see ~\ref{si1}) provides details on the number of transcripts in our combined data by show as well as the date range for each.
+
+Our next goal is to predict slant within agendas. For this purpose we use speech data from the 111th and the 112th Congress.\footnote{The time period for our media data is much longer and ideally we want to predict only contemporaneous data to account for changes in cleavages, phrases used to fight the same ideological battles, etc. over time. We plan to do that in the next iteration.} While our eventual aim is to predict slant among all topics, we for now limits ourselves to the salient issue of immigration. Within the congressional speech classified as to be on the topic of immigration, we estimate a model predicting party of the speaker, once again using SVM within Vowpal Wabbit. 
+
+\section*{Results}
+
+\subsection*{Variation in Agendas}
+If all the media organizations prayed from the same book---current events (and similar biases on what is news worthy) and congressional agenda---we would expect the distribution of topics within media to be broadly the same. On the other hand, if the media organizations exercised discretion in what to cover or had different preferences, we would expect heterogeneity in the frequency with which various topics are covered. To study the question, we looked at the frequency with which various topics are covered in various news channels. We define the quantity of interest as proportion of net coverage devoted to a topic. Alternate definitions---for e.g., total coverage of an issue---are reasonable but sensitive to frequency of news program, etc.\footnote{On television, there is a large opportunity cost for covering a topic. In a medium like newspapers or the Internet, a news media organization can cover multiple issues in depth as space is much less constrained.}
+
+For illustration, we limit ourselves to television channel-level aggregates. For focusing attention on crucial details, we limit ourselves to five topics, chosen mostly for variety and importance---immigration, education and macroeconomics. Figure ~\ref{var_agendas} plots the distribution of the topics across channels. As we can see, there is healthy variation. 
+
+However, this healthy variation hides a fair bit of co-variation. Figure ~\ref{over_time} shows topical coverage across channels across time. As we can see, coverage co-varies a bit. In fact, the average across-time correlation in proportion of coverage devoted to an issue across the eight channels is .47. For a noisy series, this is a pretty strong correlation. Average correlation in changes in coverage across issues --- with month as a unit (the optimal unit of time likely varies by issue)---also has a pulse---it is .33. This suggests that switches in focus across time are somewhat systematic, likely a consequence of exogenous factors.
+
+\begin{figure}[H]
+\centering
+\caption{Over Time Variation in Agendas}\label{over_time}
+\includegraphics[width=1\textwidth]{../figs/topic_channel_time.pdf}
+\end{figure}
+
+\subsection*{Partisanship of Agendas}
+
+Next, we estimate the partisanship of the agendas. But before we present the results, a couple of caveats about interpretation. The current estimates only come from predicting Congressional speech text, which, as we note, is vastly constrained. We plan to discern partisanship of the agendas through `speech' on less constrained media, such as manifestos and Facebook data, in the next iteration of the paper. Second, the Policy Agenda Project major topics are exceedingly crude and we pool over over much meaningful variation.
+
+After adjusting for different numbers of Democrats and Republicans, the data show that the share of Republican speech on an issue doesn't ever exceed or lag the speech by Democrats by more than 15\%. Figure ~\ref{partisan_issue} shows share of Republican (Democrat) speech on topics. There are some expected patterns in the data. Republicans speak more than Democrats on immigration, while Democrats speak more than Republicans on civil rights issues. 
+
+\begin{figure}[H]
+\centering
+\caption{Partisanship of Agendas}
+\includegraphics[width=.75\textwidth]{../figs/partisan_issue.pdf}\label{partisan_issue}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\caption{Partisanship of Agendas Over Time: Macro-economics}
+\includegraphics[width=.75\textwidth]{../figs/macro_by_obama.pdf}\label{partisan_issue}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\caption{Partisanship of Agendas Over Time: Defense}
+\includegraphics[width=.75\textwidth]{../figs/mil_by_obama.pdf}\label{partisan_issue}
+\end{figure}
+
+\subsection*{Partisan Agendas}
+
+Next, we scale partisanship of shows by their agendas. Again, before we discuss the results, we would like to issue a couple of caveats about interpretation. Even if a show focuses on a particular issue that advantages a party, it doesn't mean that the reasons the show's editors focused on the issue were partisan. External factors, unrelated to partisanship, may be to blame. For instance, the New York Times may cover poverty more often because it is founded in an urban environment with a high proportion of people suffering from poverty. So any partisan agenda may be accidental. Second, we only estimate bias in topics included in the Policy Agendas Projects. This is not a complete (though likely a large) universe of topics. Figure ~\ref{pagenda} presents distribution of partisanship of shows (extent to which the agenda across the Policy Agendas Topics is Democratic) nested within channels. The overall variation is compressed, partly as a result of choice of crude topics, none of which have an overwhelming partisan slant, and partly because the shows don't focus exclusively on the most partisan topics. Despite these issues, you can see that the median of Fox News is to the right of MSNBC, CNN, and other network channels.  
+
+\begin{figure}[H]
+\centering
+\caption{Partisanship of Agendas}\label{pagenda}
+\includegraphics[width=.75\textwidth]{../figs/partisanship_of_agenda.pdf}
+\end{figure}
+
+\subsection*{Positions within Agendas}
+Lastly, we focus on estimating positions within agendas. For now, we limit ourselves to just one topic---civil rights. As we discuss, we use congressional speech on the topic of immigration as training data. Using a model trained on the congressional data, we impute the partisanship of various television shows on the issue. We cluster the estimates by channel. Figure ~\ref{pcivil} shows the extent to which the slant is Democratic for each show on civil rights. Again Fox News median is to the right but there is a lot of overlap across channels.
+
+\begin{figure}[H]
+  \begin{subfigure}[t]{0.48\textwidth}
+   \includegraphics[width=\textwidth]{../figs/civil_prefs.pdf}
+    \end{subfigure}
+     \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+    \includegraphics[width=\textwidth]{../figs/econ_prefs.pdf}
+    \end{subfigure}
+\end{figure}
+
+
+\section*{Discussion}
+The power of the agenda has been extensively discussed in political science. And forms basis of some work on measuring media bias \citep[see for instance,]{larcinese2011partisan}. In fact, the most general model of thinking about media bias is to posit a neutral source and then observe whether different media organizations selectively cover various issues. This forms the basis of research by \citep{baum2008new} who show that editorial judgments about placement of various news items is affected by ideology. We extend the research here, creating a supervised topic model based on Policy Agenda Topics, estimating partisanship of the agendas using political speech as training data, and then using both to describe variation in agendas and variation in slant within agendas. Our research contributes to the media effects literature in creating more nuanced measures that allow us to better measure media's political consequences. 
+
+Our research also contributes to understanding on ideological scaling of media sources. Many recent attempts to scale ideology of news sources have relied on labeled political speech as training data to model the relationship between words and ideology \citep{groseclose2005, gentzkow2010}. However, language similarly can be driven by agendas that politicians pursue as much as positions on those agendas. What are the implications of our research for the measurement of ideological slant using congressional speech data as training data for building one model for relationship between words and ideology? There are potentially a couple. As we note above, language similarly can be driven by agendas that politicians pursue as much as positions on those agendas. Thus, the agendas of congress and media likely have to be largely concordant for models trained on congressional speech to yield valid indicators of differences in positions on issues. Secondly, and perhaps more importantly, media's ideology has also to be uni-dimensional. If media's positions on issues lie on more than one-dimension, congressional speech as training data to recover estimates of a generic ideological scale may not be enough. The model may still yield valid scores along the dimension of conflict spanned by congress, but it may not be enough.
+
+Like others, we struggle with how we define a topic. To call something a topic doesn't make it a coherent entity. And a careful exegesis of Policy Agendas Projects labels for bills suggests that conceptual coherence of many of the major topic labels is debatable. In the next iteration of the paper, we plan to focus on more coherent minor topic labels in the Policy Agendas Project. But even doing so leaves open many questions. For even within a subtopic of taxation, there are a variety of policy issues. For instance, estate tax, corporate tax, etc. And that strikes us as a reasonable next step.
+
+\clearpage
+
+\bibliographystyle{apsr}
+\bibliography{mediabias}
+
+\clearpage
+\appendix
+\renewcommand{\thesection}{SI \arabic{section}}
+\renewcommand\thetable{\thesection.\arabic{table}}  
+\renewcommand\thefigure{\thesection.\arabic{figure}}
+\counterwithin{figure}{section}
+
+
+\begin{center}
+\Large{Supporting Information}
+\end{center}
+
+\nocitesec{*}
+
+\section{Summary of the Media Data}
+\label{si1}
+Our text data originates from several sources. Here we summarize the number of transcripts in our combined data by show, as well as the specific data source and date range for each.
+\scriptsize
+\input{../tabs/MediaDataAppend.tex}
+
+\clearpage
+\section{Policy Agendas Topics}
+\label{si2}
+\input{../tabs/PADataAppend.tex}
+
+\clearpage
+\section{Top Predictors of Each Topic}
+\label{si_top20}
+\input{../tabs/top20_major_topic.tex}
+\clearpage
+\input{../tabs/top20_minor_topic.tex}
+
+\clearpage
+\section{Top Partisan Predictors of Each Topic}
+\input{../tabs/top20_slant.tex}
+
+\end{document}
